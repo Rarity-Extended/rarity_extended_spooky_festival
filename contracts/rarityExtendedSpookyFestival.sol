@@ -3,6 +3,7 @@ pragma solidity ^0.8.7;
 
 import "./interfaces/IRarity.sol";
 import "./interfaces/IrERC20.sol";
+import "./interfaces/IAttributes.sol";
 import "./interfaces/IRandomCodex.sol";
 import "./onlyExtended.sol";
 
@@ -15,16 +16,31 @@ contract rarity_extended_spooky_festival is OnlyExtended {
 
     IRarity constant _rm = IRarity(0xce761D788DF608BD21bdd59d6f4B54b2e27F25Bb);
     IRandomCodex constant _random = IRandomCodex(0x7426dBE5207C2b5DaC57d8e55F0959fcD99661D4);
+    attributes constant _attributes = attributes(0xB5F5AF1087A8DA62A23b08C00C6ec9af21F397a1);
     IrERC20 public candies;
 
     mapping(uint => bool) public claimed;
-    mapping(uint => uint) public actions_count;
-    mapping(uint => uint) public actions_log;
+    mapping(uint => uint) public candies_action_count;
+    mapping(uint => uint) public candies_action_log;
+    mapping(uint => uint) public activities_count;
+    mapping(uint => uint) public activities_log;
 
     constructor(address _candiesAddr) OnlyExtended() {
         candies = IrERC20(_candiesAddr);
         SUMMMONER_ID = _rm.next_summoner();
         _rm.summon(11);
+    }
+
+    modifier can_do_activities(uint _summoner) {
+        require(block.timestamp > activities_log[_summoner], "!activities");
+    
+        activities_count[_summoner] += 1;
+        if (activities_count[_summoner] == 2) {
+            //Two activities per day
+            activities_log[_summoner] = block.timestamp + DAY;
+            activities_count[_summoner] = 0;
+        }
+        _;
     }
 
     function claim(uint _summoner) external {
@@ -34,16 +50,16 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         candies.mint(_summoner, GIFT_CANDIES);
     }
 
-    function trick_or_treat(uint _summoner, uint256 _amount) external {
+    function trick_or_treat(uint _summoner, uint256 _amount) external can_do_activities(_summoner) {
         require(_isApprovedOrOwner(_summoner), "!owner");
         require(_amount == 25e18 || _amount == 50e18 || _amount == 100e18, "!invalidAmount");
         require(candies.transferFrom(SUMMMONER_ID, _summoner, SUMMMONER_ID, _amount), "!amount");
-        require(block.timestamp > actions_log[_summoner], "!action");
+        require(block.timestamp > candies_action_log[_summoner], "!action");
     
-        actions_count[_summoner] += 1;
-        if (actions_count[_summoner] == 3) {
-           actions_log[_summoner] = block.timestamp + DAY;
-           actions_count[_summoner] = 0;
+        candies_action_count[_summoner] += 1;
+        if (candies_action_count[_summoner] == 3) {
+           candies_action_log[_summoner] = block.timestamp + DAY;
+           candies_action_count[_summoner] = 0;
         }
 
         uint random = _get_random(_summoner, 100, false);
@@ -53,6 +69,42 @@ contract rarity_extended_spooky_festival is OnlyExtended {
             candies.burn(SUMMMONER_ID, _amount);
             candies.mint(_summoner, _amount * 2);
         }
+    }
+
+    function throw_a_rock(uint _summoner) external can_do_activities(_summoner) {
+        //Look for strenght
+        (uint str,,,,,) = _attributes.ability_scores(_summoner);
+        candies.mint(_summoner, str * 1e18);
+    }
+
+    function steal_a_pumpkin(uint _summoner) external can_do_activities(_summoner) {
+        //Look for dexterity
+        (,uint dex,,,,) = _attributes.ability_scores(_summoner);
+        candies.mint(_summoner, dex * 1e18);
+    }
+
+    function tell_a_scary_story(uint _summoner) external can_do_activities(_summoner) {
+        //Look for charisma
+        (,,,,,uint cha) = _attributes.ability_scores(_summoner);
+        candies.mint(_summoner, cha * 1e18);
+    }
+
+    function do_a_magic_treat(uint _summoner) external can_do_activities(_summoner) {
+        //Look for int
+        (,,,uint inte,,) = _attributes.ability_scores(_summoner);
+        candies.mint(_summoner, inte * 1e18);
+    }
+
+    function candy_eating_contest(uint _summoner) external can_do_activities(_summoner) {
+        //Look for con
+        (,,uint con,,,) = _attributes.ability_scores(_summoner);
+        candies.mint(_summoner, con * 1e18);
+    }
+
+    function do_some_babysitting(uint _summoner) external can_do_activities(_summoner) {
+        //Look for wisdom
+        (,,,,uint wis,) = _attributes.ability_scores(_summoner);
+        candies.mint(_summoner, wis * 1e18);
     }
 
     function _isApprovedOrOwner(uint _summoner) internal view returns (bool) {
