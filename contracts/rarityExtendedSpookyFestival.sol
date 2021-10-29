@@ -20,8 +20,8 @@ contract rarity_extended_spooky_festival is OnlyExtended {
     IrERC20 public candies;
 
     mapping(uint => bool) public claimed;
-    mapping(uint => uint) public candies_action_count;
-    mapping(uint => uint) public candies_action_log;
+    mapping(uint => uint) public trick_or_trick_count;
+    mapping(uint => uint) public trick_or_trick_log;
     mapping(uint => uint) public activities_count;
     mapping(uint => uint) public activities_log;
 
@@ -50,16 +50,16 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         candies.mint(_summoner, GIFT_CANDIES);
     }
 
-    function trick_or_treat(uint _summoner, uint256 _amount) external can_do_activities(_summoner) {
+    function trick_or_treat(uint _summoner, uint256 _amount) external {
         require(_isApprovedOrOwner(_summoner), "!owner");
         require(_amount == 25e18 || _amount == 50e18 || _amount == 100e18, "!invalidAmount");
         require(candies.transferFrom(SUMMMONER_ID, _summoner, SUMMMONER_ID, _amount), "!amount");
-        require(block.timestamp > candies_action_log[_summoner], "!action");
+        require(block.timestamp > trick_or_trick_log[_summoner], "!action");
     
-        candies_action_count[_summoner] += 1;
-        if (candies_action_count[_summoner] == 3) {
-           candies_action_log[_summoner] = block.timestamp + DAY;
-           candies_action_count[_summoner] = 0;
+        trick_or_trick_count[_summoner] += 1;
+        if (trick_or_trick_count[_summoner] == 3) {
+           trick_or_trick_log[_summoner] = block.timestamp + DAY;
+           trick_or_trick_count[_summoner] = 0;
         }
 
         uint random = _get_random(_summoner, 100, false);
@@ -89,7 +89,7 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         candies.mint(_summoner, cha * 1e18);
     }
 
-    function do_a_magic_treat(uint _summoner) external can_do_activities(_summoner) {
+    function do_a_magic_trick(uint _summoner) external can_do_activities(_summoner) {
         //Look for int
         (,,,uint inte,,) = _attributes.ability_scores(_summoner);
         candies.mint(_summoner, inte * 1e18);
