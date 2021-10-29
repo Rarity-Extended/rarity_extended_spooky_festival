@@ -7,4 +7,6 @@ interface IRarity {
     function getApproved(uint) external view returns (address);
     function ownerOf(uint) external view returns (address);
     function isApprovedForAll(address owner, address operator) external view returns (bool);
+    function next_summoner() external view returns (uint);
+    function summon(uint _class) external;
 }

@@ -48,6 +48,7 @@ abstract contract rERC20 is AccessControl, OnlyExtended {
         totalSupply -= amount;
         balanceOf[from] -= amount;
         emit Transfer(from, from, amount);
+        return true;
     }
 
     function approve(uint from, uint spender, uint amount) external returns (bool) {
