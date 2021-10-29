@@ -50,7 +50,7 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         candies.mint(_summoner, GIFT_CANDIES);
     }
 
-    function trick_or_treat(uint _summoner, uint256 _amount) external {
+    function trick_or_treat(uint _summoner, uint256 _amount, uint _choice) external {
         require(_isApprovedOrOwner(_summoner), "!owner");
         require(_amount == 25e18 || _amount == 50e18 || _amount == 100e18, "!invalidAmount");
         require(candies.transferFrom(SUMMMONER_ID, _summoner, SUMMMONER_ID, _amount), "!amount");
@@ -62,12 +62,12 @@ contract rarity_extended_spooky_festival is OnlyExtended {
            trick_or_trick_count[_summoner] = 0;
         }
 
-        uint random = _get_random(_summoner, 100, false);
-        if (random <= 50) {
-            candies.burn(SUMMMONER_ID, _amount);
-        } else {
+        uint random = _get_random(_summoner, 3, false);
+        if (random == _choice) {
             candies.burn(SUMMMONER_ID, _amount);
             candies.mint(_summoner, _amount * 2);
+        } else {
+            candies.burn(SUMMMONER_ID, _amount);
         }
     }
 
@@ -95,7 +95,7 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         candies.mint(_summoner, inte * 1e18);
     }
 
-    function candy_eating_contest(uint _summoner) external can_do_activities(_summoner) {
+    function cake_eating_contest(uint _summoner) external can_do_activities(_summoner) {
         //Look for con
         (,,uint con,,,) = _attributes.ability_scores(_summoner);
         candies.mint(_summoner, con * 1e18);
