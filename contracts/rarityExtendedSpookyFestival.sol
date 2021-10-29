@@ -19,6 +19,7 @@ contract rarity_extended_spooky_festival {
     IrERC20 public candies;
 
     mapping(uint => bool) public claimed;
+    mapping(uint => uint) public actions_count;
     mapping(uint => uint) public actions_log;
 
     constructor(address _candiesAddr) OnlyExtended() {
@@ -38,7 +39,14 @@ contract rarity_extended_spooky_festival {
         require(_isApprovedOrOwner(_summoner), "!owner");
         require(_amount == 25 || _amount == 50 || _amount == 100, "!invalidAmount");
         require(candies.transferFrom(SUMMMONER_ID, _summoner, SUMMMONER_ID, _amount), "!amount");
-        
+        require(block.timestamp > actions_log[_summoner], "!action");
+    
+        actions_count[_summoner] += 1;
+        if (actions_count[_summoner] == 3) {
+           actions_log[_summoner] = block.timestamp + DAY;
+           actions_count[_summoner] = 0;
+        }
+
         uint random = _get_random(_summoner, 100, false);
         if (random <= 50) {
             candies.burn(SUMMMONER_ID, _amount);

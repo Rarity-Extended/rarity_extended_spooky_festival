@@ -3,17 +3,30 @@ async function main() {
     await hre.run("clean");
     await hre.run("compile");
 
+    //Deploy candies
+    this.Candies = await ethers.getContractFactory("Candies");
+    this.candies = await this.Candies.deploy(rarityAddr);
+    await this.candies.deployed();
+    console.log("Deployed candies to:", this.candies.address);
+
     //Deploy
     this.Contract = await ethers.getContractFactory("rarity_extended_spooky_festival");
-    this.Contract = await this.Contract.deploy();
+    this.Contract = await this.Contract.deploy(this.candies.address);
+    await this.Contract.deployed();
     console.log("Deployed to:", this.Contract.address);
 
-    await this.Contract.deployed();
+    await (await this.candies.setMinter(this.Contract.address)).wait();
+    console.log("Minter setted up successfully to:", this.boarAdventure.address);
 
     await hre.run("verify:verify", {
 		address: this.Contract.address,
-		constructorArguments: [],
+		constructorArguments: [this.candies.address],
 	});
+    await hre.run("verify:verify", {
+        address: this.candies.address,
+        constructorArguments: [rarityAddr],
+        contract: "contracts/candies.sol:Candies"
+    });
 }
 
 main()
