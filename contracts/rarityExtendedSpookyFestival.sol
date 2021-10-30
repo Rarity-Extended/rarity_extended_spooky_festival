@@ -55,6 +55,7 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         require(_amount == 25 || _amount == 50 || _amount == 100, "!invalidAmount");
         require(candies.transferFrom(SUMMMONER_ID, _summoner, SUMMMONER_ID, _amount), "!amount");
         require(block.timestamp > trick_or_treat_log[_summoner], "!action");
+        require(_choice == 1 || _choice == 2 || _choice == 3, "!choice");
     
         trick_or_treat_count[_summoner] += 1;
         if (trick_or_treat_count[_summoner] == 3) {
