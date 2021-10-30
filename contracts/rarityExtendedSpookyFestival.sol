@@ -13,6 +13,7 @@ contract rarity_extended_spooky_festival is OnlyExtended {
     string public constant symbol = "rSpook";
     uint256 public constant GIFT_CANDIES = 100;
     uint public immutable SUMMMONER_ID;
+    uint public end_halloween_ts = 0;
 
     IRarity constant _rm = IRarity(0xce761D788DF608BD21bdd59d6f4B54b2e27F25Bb);
     IRandomCodex constant _random = IRandomCodex(0x7426dBE5207C2b5DaC57d8e55F0959fcD99661D4);
@@ -29,6 +30,7 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         candies = IrERC20(_candiesAddr);
         SUMMMONER_ID = _rm.next_summoner();
         _rm.summon(11);
+        end_halloween_ts = block.timestamp + (7 * DAY);
     }
 
     modifier can_do_activities(uint _summoner) {
@@ -44,14 +46,19 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         _;
     }
 
-    function claim(uint _summoner) external {
+    modifier is_halloween() {
+        require(block.timestamp < end_halloween_ts, "!halloween");
+        _;
+    }
+
+    function claim(uint _summoner) external is_halloween {
         require(_isApprovedOrOwner(_summoner), "!owner");
         require(claimed[_summoner] == false, "claimed");
         claimed[_summoner] = true;
         candies.mint(_summoner, GIFT_CANDIES);
     }
 
-    function trick_or_treat(uint _summoner, uint256 _amount, uint _choice) external {
+    function trick_or_treat(uint _summoner, uint256 _amount, uint _choice) external is_halloween {
         require(_isApprovedOrOwner(_summoner), "!owner");
         require(_amount == 25 || _amount == 50 || _amount == 100, "!invalidAmount");
         require(candies.transferFrom(SUMMMONER_ID, _summoner, SUMMMONER_ID, _amount), "!amount");
@@ -73,37 +80,37 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         }
     }
 
-    function throw_a_rock(uint _summoner) external can_do_activities(_summoner) {
+    function throw_a_rock(uint _summoner) external is_halloween can_do_activities(_summoner) {
         //Look for strenght
         (uint str,,,,,) = _attributes.ability_scores(_summoner);
         candies.mint(_summoner, str);
     }
 
-    function steal_a_pumpkin(uint _summoner) external can_do_activities(_summoner) {
+    function steal_a_pumpkin(uint _summoner) external is_halloween can_do_activities(_summoner) {
         //Look for dexterity
         (,uint dex,,,,) = _attributes.ability_scores(_summoner);
         candies.mint(_summoner, dex);
     }
 
-    function tell_a_scary_story(uint _summoner) external can_do_activities(_summoner) {
+    function tell_a_scary_story(uint _summoner) external is_halloween can_do_activities(_summoner) {
         //Look for charisma
         (,,,,,uint cha) = _attributes.ability_scores(_summoner);
         candies.mint(_summoner, cha);
     }
 
-    function do_a_magic_trick(uint _summoner) external can_do_activities(_summoner) {
+    function do_a_magic_trick(uint _summoner) external is_halloween can_do_activities(_summoner) {
         //Look for int
         (,,,uint inte,,) = _attributes.ability_scores(_summoner);
         candies.mint(_summoner, inte);
     }
 
-    function cake_eating_contest(uint _summoner) external can_do_activities(_summoner) {
+    function cake_eating_contest(uint _summoner) external is_halloween can_do_activities(_summoner) {
         //Look for con
         (,,uint con,,,) = _attributes.ability_scores(_summoner);
         candies.mint(_summoner, con);
     }
 
-    function do_some_babysitting(uint _summoner) external can_do_activities(_summoner) {
+    function do_some_babysitting(uint _summoner) external is_halloween can_do_activities(_summoner) {
         //Look for wisdom
         (,,,,uint wis,) = _attributes.ability_scores(_summoner);
         candies.mint(_summoner, wis);
