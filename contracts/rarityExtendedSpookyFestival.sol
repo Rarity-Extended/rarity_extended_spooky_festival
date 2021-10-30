@@ -32,6 +32,7 @@ contract rarity_extended_spooky_festival is OnlyExtended {
     }
 
     modifier can_do_activities(uint _summoner) {
+        require(_isApprovedOrOwner(_summoner), "!owner");
         require(block.timestamp > activities_log[_summoner], "!activities");
     
         activities_count[_summoner] += 1;
