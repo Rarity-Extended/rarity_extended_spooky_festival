@@ -65,7 +65,7 @@ contract rarity_extended_spooky_festival is OnlyExtended {
         uint random = _get_random(_summoner, 3, false);
         if (random == _choice) {
             candies.burn(SUMMMONER_ID, _amount);
-            candies.mint(_summoner, _amount * 2);
+            candies.mint(_summoner, _amount * 3);
         } else {
             candies.burn(SUMMMONER_ID, _amount);
         }
