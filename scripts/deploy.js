@@ -5,7 +5,7 @@ async function main() {
 
     //Deploy candies
     this.Candies = await ethers.getContractFactory("Candies");
-    this.candies = await this.Candies.deploy(rarityAddr);
+    this.candies = await this.Candies.deploy('0xce761D788DF608BD21bdd59d6f4B54b2e27F25Bb');
     await this.candies.deployed();
     console.log("Deployed candies to:", this.candies.address);
 
@@ -16,7 +16,7 @@ async function main() {
     console.log("Deployed to:", this.Contract.address);
 
     await (await this.candies.setMinter(this.Contract.address)).wait();
-    console.log("Minter setted up successfully to:", this.boarAdventure.address);
+    console.log("Minter setted up successfully to:", this.Contract.address);
 
     await hre.run("verify:verify", {
 		address: this.Contract.address,
@@ -24,7 +24,7 @@ async function main() {
 	});
     await hre.run("verify:verify", {
         address: this.candies.address,
-        constructorArguments: [rarityAddr],
+        constructorArguments: ['0xce761D788DF608BD21bdd59d6f4B54b2e27F25Bb'],
         contract: "contracts/candies.sol:Candies"
     });
 }

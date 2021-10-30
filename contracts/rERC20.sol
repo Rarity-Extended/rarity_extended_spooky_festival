@@ -3,8 +3,8 @@ pragma solidity 0.8.7;
 
 import "./interfaces/IRarity.sol";
 import "./interfaces/IAttributes.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./onlyExtended.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 abstract contract rERC20 is AccessControl, OnlyExtended {
 
